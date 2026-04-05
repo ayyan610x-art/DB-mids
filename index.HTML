@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Database Systems Learning Hub</title>
+  <style>
+    :root {
+      --bg: #0f172a; --panel: rgba(15, 23, 42, 0.78); --panel-2: rgba(30, 41, 59, 0.9);
+      --text: #e2e8f0; --muted: #94a3b8; --line: rgba(148, 163, 184, 0.16);
+      --accent: #60a5fa; --accent-2: #22c55e; --warning: #f59e0b; --danger: #ef4444;
+      --chip: rgba(96, 165, 250, 0.16); --shadow: 0 20px 60px rgba(0,0,0,0.28);
+      --radius: 22px; --radius-sm: 14px; --sidebar-w: 290px;
+    }
+    body.light {
+      --bg: #f8fafc; --panel: rgba(255,255,255,0.9); --panel-2: rgba(241,245,249,0.95);
+      --text: #0f172a; --muted: #475569; --line: rgba(15,23,42,0.10);
+      --accent: #2563eb; --accent-2: #16a34a; --warning: #d97706; --danger: #dc2626;
+      --chip: rgba(37,99,235,0.10); --shadow: 0 18px 45px rgba(15,23,42,0.12);
+    }
+    * { box-sizing: border-box; } html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(circle at top left, rgba(96,165,250,0.18), transparent 24%),
+        radial-gradient(circle at top right, rgba(34,197,94,0.12), transparent 20%),
+        linear-gradient(180deg, rgba(2,6,23,0.2), rgba(2,6,23,0.2)), var(--bg);
+      color: var(--text); overflow-x: hidden; transition: background .25s ease, color .25s ease;
+    }
+    a { color: inherit; text-decoration: none; }
+    button, input, textarea, select { font: inherit; }
+    .app { display: grid; grid-template-columns: var(--sidebar-w) 1fr; min-height: 100vh; }
+    .sidebar {
+      position: sticky; top: 0; height: 100vh; padding: 18px;
+      border-right: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), transparent), var(--panel);
+      backdrop-filter: blur(18px); overflow-y: auto;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; padding: 12px 12px 16px; margin-bottom: 12px; }
+    .brand-mark {
+      width: 42px; height: 42px; border-radius: 14px; display: grid; place-items: center;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: white; font-weight: 800; box-shadow: var(--shadow);
+    }
+    .brand h1 { font-size: 1.03rem; line-height: 1.15; margin: 0; }
+    .brand p { margin: 4px 0 0; color: var(--muted); font-size: .86rem; }
+    .nav-section { margin: 16px 0 10px; color: var(--muted); font-size: .78rem; letter-spacing: .12em; text-transform: uppercase; padding: 0 12px; }
+    .nav { display: flex; flex-direction: column; gap: 8px; padding: 0 6px; }
+    .nav a {
+      display: flex; align-items: center; gap: 10px; padding: 11px 12px;
+      border-radius: 16px; border: 1px solid transparent; color: var(--text);
+      background: transparent; transition: all .2s ease;
+    }
+    .nav a:hover, .nav a.active { background: var(--chip); border-color: rgba(96,165,250,.22); transform: translateX(2px); }
+    .nav .icon { width: 28px; height: 28px; border-radius: 10px; display: grid; place-items: center; background: rgba(96,165,250,.14); color: var(--accent); flex: 0 0 auto; }
+    .sidebar-card { margin: 16px 10px 0; padding: 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel-2); box-shadow: var(--shadow); }
+    .progress-ring { display: grid; grid-template-columns: 76px 1fr; gap: 14px; align-items: center; }
+    .ring { width: 76px; height: 76px; border-radius: 50%; background: conic-gradient(var(--accent) 0% 0%, rgba(148,163,184,.15) 0% 100%); display: grid; place-items: center; position: relative; }
+    .ring::after { content: ''; position: absolute; inset: 9px; border-radius: 50%; background: var(--panel-2); }
+    .ring span { position: relative; z-index: 1; font-weight: 800; font-size: 1rem; }
+    .sidebar small { color: var(--muted); }
+    .main { padding: 20px; }
+    .topbar { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+    .hero { display: grid; grid-template-columns: 1.4fr .8fr; gap: 18px; margin-bottom: 18px; }
+    .panel { border: 1px solid var(--line); border-radius: var(--radius); background: linear-gradient(180deg, rgba(255,255,255,.03), transparent), var(--panel); box-shadow: var(--shadow); backdrop-filter: blur(18px); }
+    .hero-copy { padding: 24px; }
+    .hero-copy h2 { margin: 0 0 10px; font-size: clamp(1.5rem, 2vw, 2.5rem); line-height: 1.1; }
+    .hero-copy p { color: var(--muted); margin: 0 0 18px; max-width: 65ch; }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip { padding: 8px 11px; border-radius: 999px; background: var(--chip); border: 1px solid rgba(96,165,250,.18); color: var(--text); font-size: .9rem; }
+    .toolbox { padding: 18px; display: grid; gap: 12px; align-content: start; }
+    .toolbox h3, .section h3, .page-head h3, .quiz-head h3, .topic-title { margin: 0; }
+    .searchbox { display: flex; gap: 10px; align-items: center; padding: 12px 14px; border-radius: 18px; border: 1px solid var(--line); background: var(--panel-2); }
+    .searchbox input { width: 100%; border: 0; outline: none; background: transparent; color: var(--text); }
+    .button-row { display: flex; flex-wrap: wrap; gap: 10px; }
+    .btn { border: 1px solid var(--line); background: var(--panel-2); color: var(--text); padding: 11px 14px; border-radius: 14px; cursor: pointer; transition: transform .18s ease, border-color .18s ease, background .18s ease; }
+    .btn:hover { transform: translateY(-1px); border-color: rgba(96,165,250,.38); }
+    .btn.primary { background: linear-gradient(135deg, var(--accent), #8b5cf6); color: white; border-color: transparent; }
+    .btn.success { background: linear-gradient(135deg, var(--accent-2), #14b8a6); color: white; border-color: transparent; }
+    .section { display: none; animation: fadeUp .24s ease; }
+    .section.active { display: block; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .grid-2 { display: grid; grid-template-columns: 1.1fr .9fr; gap: 18px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .card { border: 1px solid var(--line); background: var(--panel); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+    .card.pad { padding: 18px; }
+    .section-head { display: flex; justify-content: space-between; align-items: end; gap: 12px; margin-bottom: 14px; }
+    .section-head p, .muted { color: var(--muted); margin: 0; }
+    .lecture-list { display: grid; gap: 12px; }
+    .lecture { padding: 16px; border-radius: 18px; border: 1px solid var(--line); background: var(--panel-2); }
+    .lecture header { display: flex; justify-content: space-between; gap: 10px; align-items: start; margin-bottom: 10px; }
+    .lecture h4 { margin: 0 0 6px; font-size: 1.03rem; }
+    .meta { display: flex; gap: 8px; flex-wrap: wrap; }
+    .tag { font-size: .78rem; border-radius: 999px; padding: 6px 9px; background: rgba(96,165,250,.10); border: 1px solid rgba(96,165,250,.16); color: var(--text); }
+    details { border-top: 1px solid var(--line); margin-top: 10px; padding-top: 10px; }
+    details summary { cursor: pointer; color: var(--accent); font-weight: 600; list-style: none; outline: none; }
+    details summary::-webkit-details-marker { display: none; }
+    .content-html { color: var(--text); line-height: 1.65; margin-top: 10px; }
+    .content-html h3 { margin: 14px 0 6px; font-size: 1rem; color: var(--accent); }
+    .content-html p { margin: 0 0 8px; }
+    .content-html ul, .content-html ol { padding-left: 20px; margin: 6px 0 10px; }
+    .content-html li { margin: 5px 0; }
+    .content-html .hl { background: rgba(245,158,11,0.25); padding: 0 3px; border-radius: 4px; }
+    .content-html .slide-block { border-left: 3px solid var(--accent); background: rgba(96,165,250,.07); padding: 10px 14px; border-radius: 0 8px 8px 0; margin: 10px 0; }
+    .content-html table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: .9rem; }
+    .content-html th { background: rgba(96,165,250,.10); padding: 8px 10px; text-align: left; border: 1px solid var(--line); }
+    .content-html td { padding: 7px 10px; border: 1px solid var(--line); color: var(--muted); }
+    .content-html code { background: rgba(96,165,250,.12); padding: 2px 6px; border-radius: 5px; font-size: .87rem; font-family: 'Consolas', monospace; color: var(--accent-2); }
+    .content-html pre { background: rgba(2,6,23,.5); border: 1px solid var(--line); border-radius: 10px; padding: 12px; overflow-x: auto; margin: 8px 0; }
+    .content-html pre code { background: none; padding: 0; font-size: .87rem; }
+    .lecture-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 12px; }
+    .checkline { display: flex; gap: 8px; align-items: center; font-size: .92rem; color: var(--muted); }
+    .note-box { width: 100%; min-height: 86px; resize: vertical; border-radius: 14px; padding: 12px; border: 1px solid var(--line); background: rgba(15,23,42,0.06); color: var(--text); outline: none; margin-top: 10px; }
+    body.light .note-box { background: rgba(255,255,255,.65); }
+    .bookmark { display: inline-flex; align-items: center; gap: 6px; }
+    .topic-strip { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 18px; }
+    .topic-pill { padding: 14px; border-radius: 18px; border: 1px solid var(--line); background: var(--panel); cursor: pointer; transition: transform .18s ease, border-color .18s ease; }
+    .topic-pill:hover { transform: translateY(-2px); border-color: rgba(96,165,250,.35); }
+    .topic-pill.active { background: var(--chip); border-color: rgba(96,165,250,.32); }
+    .topic-pill strong { display: block; }
+    .topic-pill span { color: var(--muted); font-size: .86rem; }
+    .page-head { margin-bottom: 18px; display: grid; gap: 8px; }
+    .video-slot { margin-top: 14px; border-radius: 20px; overflow: hidden; border: 1px solid var(--line); background: linear-gradient(135deg, rgba(96,165,250,.12), rgba(34,197,94,.08)); }
+    .video-wrap { position: relative; width: 100%; aspect-ratio: 16/9; background: rgba(2,6,23,0.40); }
+    .video-wrap iframe { width: 100%; height: 100%; border: 0; display: block; background: transparent; }
+    .video-stack { display: flex; flex-direction: column; gap: 14px; margin-top: 14px; }
+    .video-placeholder { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; color: var(--muted); padding: 16px; pointer-events: none; font-size: .94rem; }
+    .quiz-box { padding: 18px; display: grid; gap: 12px; }
+    .quiz-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    .quiz-list { display: grid; gap: 12px; }
+    .qcard { border: 1px solid var(--line); background: var(--panel-2); border-radius: 18px; padding: 14px; }
+    .qcard h4 { margin: 0 0 8px; }
+    .options { display: grid; gap: 8px; margin-top: 10px; }
+    .option { display: flex; gap: 10px; align-items: start; padding: 10px 12px; border: 1px solid var(--line); border-radius: 14px; background: rgba(255,255,255,.03); cursor: pointer; }
+    .option.correct { border-color: rgba(34,197,94,.6); background: rgba(34,197,94,.12); }
+    .option.wrong { border-color: rgba(239,68,68,.7); background: rgba(239,68,68,.10); }
+    .answer-reveal { display: none; margin-top: 10px; padding: 10px 12px; border-radius: 14px; background: rgba(96,165,250,.12); border: 1px dashed rgba(96,165,250,.28); }
+    .result { padding: 12px 14px; border-radius: 14px; background: rgba(34,197,94,.10); border: 1px solid rgba(34,197,94,.22); color: var(--text); display: none; }
+    .table { width: 100%; border-collapse: collapse; overflow: hidden; border-radius: 18px; border: 1px solid var(--line); }
+    .table th, .table td { text-align: left; padding: 12px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    .table th { background: rgba(96,165,250,.08); }
+    .study-timeline { display: grid; gap: 12px; }
+    .week { padding: 16px; border-radius: 18px; border: 1px solid var(--line); background: var(--panel-2); }
+    .week-head { display: flex; justify-content: space-between; gap: 12px; align-items: center; margin-bottom: 8px; }
+    .progress-bar { width: 100%; height: 10px; background: rgba(148,163,184,.16); border-radius: 999px; overflow: hidden; margin-top: 8px; }
+    .progress-bar > div { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); width: 0%; border-radius: 999px; transition: width .25s ease; }
+    .small-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+    .footer-note { color: var(--muted); font-size: .9rem; }
+    mark { background: rgba(245,158,11,.28); color: inherit; padding: 0 3px; border-radius: 4px; }
+    .hidden { display: none !important; }
+    @media (max-width: 1100px) {
+      .app { grid-template-columns: 1fr; }
+      .sidebar { position: relative; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+      .hero, .grid-2, .grid-3, .topic-strip, .small-grid { grid-template-columns: 1fr; }
+      .main { padding: 14px; }
+      .sidebar-card { margin: 14px 0 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">DB</div>
+        <div><h1>Database Systems<br/>Learning Hub</h1><p>Organize, study, quiz, repeat</p></div>
+      </div>
+      <div class="nav-section">Navigation</div>
+      <nav class="nav" id="navLinks">
+        <a href="#home" data-page="home" class="active"><span class="icon">⌂</span> Dashboard</a>
+        <a href="#architecture" data-page="architecture"><span class="icon">A</span> Architecture</a>
+        <a href="#lifecycle" data-page="lifecycle"><span class="icon">L</span> Lifecycle</a>
+        <a href="#models" data-page="models"><span class="icon">M</span> Models &amp; Design</a>
+        <a href="#sql" data-page="sql"><span class="icon">S</span> SQL</a>
+        <a href="#keys" data-page="keys"><span class="icon">K</span> Keys</a>
+        <a href="#study" data-page="study"><span class="icon">★</span> Study Plan</a>
+        <a href="#quiz" data-page="quiz"><span class="icon">?</span> Giant Quiz</a>
+      </nav>
+      <div class="sidebar-card">
+        <div class="progress-ring">
+          <div class="ring" id="ring"><span id="progressText">0%</span></div>
+          <div><strong>Learning Progress</strong><br/><small id="progressLabel">0 of 9 lectures completed</small></div>
+        </div>
+        <div class="progress-bar"><div id="progressBar"></div></div>
+      </div>
+      <div class="sidebar-card">
+        <strong>Quick Notes</strong>
+        <p class="footer-note">Your notes and bookmarks are saved in the browser.</p>
+        <div class="button-row" style="margin-top:10px;">
+          <button class="btn" id="toggleThemeBtn">Toggle Theme</button>
+          <button class="btn" id="resetBtn">Reset All</button>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="searchbox panel" style="flex:1; min-width: 260px;">
+          <span style="color:var(--muted);">⌕</span>
+          <input id="searchInput" type="search" placeholder="Search lectures, keywords, summaries..." />
+        </div>
+        <div class="button-row">
+          <button class="btn primary" data-jump="study">Open Study Plan</button>
+          <button class="btn success" data-jump="quiz">Random Giant Quiz</button>
+        </div>
+      </div>
+
+      <section class="hero">
+        <div class="panel hero-copy">
+          <h2>Study Database Systems with pages, quizzes, notes, and a SQL playground.</h2>
+          <p>This app turns your lecture files into a clean learning hub. Explore each topic, expand full lesson content, add notes, mark progress, and practice with random quizzes that reshuffle every time.</p>
+          <div class="chips">
+            <span class="chip">DBMS Basics</span><span class="chip">Architecture</span>
+            <span class="chip">ER &amp; Design</span><span class="chip">SQL Playground</span>
+            <span class="chip">Random Quiz Engine</span>
+          </div>
+        </div>
+        <div class="panel toolbox">
+          <h3>Course Index</h3>
+          <p class="muted">Use the topic cards below or the sidebar to jump between pages.</p>
+          <table class="table">
+            <thead><tr><th>Topic</th><th>Files</th></tr></thead>
+            <tbody>
+              <tr><td>Architecture</td><td>1</td></tr>
+              <tr><td>Lifecycle</td><td>1</td></tr>
+              <tr><td>Models &amp; Design</td><td>4</td></tr>
+              <tr><td>SQL</td><td>2</td></tr>
+              <tr><td>Keys</td><td>2</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="topic-strip">
+        <div class="topic-pill active" data-page-pill="home"><strong>Dashboard</strong><span>Overview &amp; index</span></div>
+        <div class="topic-pill" data-page-pill="architecture"><strong>Architecture</strong><span>ANSI-SPARC</span></div>
+        <div class="topic-pill" data-page-pill="models"><strong>Models &amp; Design</strong><span>Approach, ER, design</span></div>
+        <div class="topic-pill" data-page-pill="sql"><strong>SQL</strong><span>Basics + playground</span></div>
+        <div class="topic-pill" data-page-pill="quiz"><strong>Giant Quiz</strong><span>Randomized test</span></div>
+      </div>
+
+      <section class="section active" id="page-home">
+        <div class="page-head"><h3>Dashboard</h3><p>Browse the content library, open any lecture card, add notes, and jump into study mode.</p></div>
+        <div class="grid-2">
+          <div class="card pad">
+            <div class="section-head">
+              <div><h3>Content Index</h3><p>All files are grouped by topic and searchable.</p></div>
+              <div class="muted" id="searchStatus">Showing all lectures</div>
+            </div>
+            <div class="lecture-list" id="homeList"></div>
+          </div>
+          <div class="card pad">
+            <div class="section-head"><div><h3>Video Space</h3><p>Welcome to your learning hub.</p></div></div>
+            <div class="video-slot"><div class="video-wrap"><iframe width="560" height="315" src="https://www.youtube.com/embed/yE6tIle64tU" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div></div>
+            <div class="card pad" style="margin-top:14px; background: var(--panel-2);">
+              <h3>How to use this app</h3>
+              <p class="muted">Search by topic, open lecture content, save notes, then attempt the random quiz below each section.</p>
+              <div class="chips" style="margin-top: 10px;"><span class="chip">Expand content</span><span class="chip">Save notes</span><span class="chip">Bookmark lectures</span><span class="chip">Track progress</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="page-architecture">
+        <div class="page-head"><h3>Architecture</h3><p>ANSI-SPARC three-schema architecture, abstraction, and data independence.</p></div>
+        <div class="grid-2">
+          <div class="card pad">
+            <div id="architectureLectures"></div>
+            <div class="video-slot"><div class="video-wrap"><iframe width="560" height="315" src="https://www.youtube.com/embed/5fs1ldO6B5c" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div></div>
+          </div>
+          <div class="card quiz-box">
+            <div class="quiz-head"><div><h3>Architecture Quiz</h3><p class="muted">Random MCQs and Q/A items from this topic.</p></div><button class="btn primary" onclick="renderQuiz('architecture')">New Random Quiz</button></div>
+            <div id="architectureQuiz" class="quiz-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="page-lifecycle">
+        <div class="page-head"><h3>Lifecycle</h3><p>Database development life cycle from requirements through maintenance.</p></div>
+        <div class="grid-2">
+          <div class="card pad">
+            <div id="lifecycleLectures"></div>
+            <div class="video-slot"><div class="video-wrap"><iframe width="560" height="315" src="https://www.youtube.com/embed/HW35qFDhgok" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div></div>
+          </div>
+          <div class="card quiz-box">
+            <div class="quiz-head"><div><h3>Lifecycle Quiz</h3><p class="muted">Randomized questions every time.</p></div><button class="btn primary" onclick="renderQuiz('lifecycle')">New Random Quiz</button></div>
+            <div id="lifecycleQuiz" class="quiz-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="page-models">
+        <div class="page-head"><h3>Models &amp; Design</h3><p>Database approach, DB models, database design, and ER relationships.</p></div>
+        <div class="grid-2">
+          <div class="card pad">
+            <div id="modelsLectures"></div>
+          </div>
+          <div class="card pad">
+            <div class="section-head"><div><h3>Conceptual Stack &amp; Forms</h3><p class="muted">A stack of concepts and embedded forms for ER design.</p></div></div>
+            <div class="video-stack">
+              <div class="video-slot"><div class="video-wrap"><iframe width="560" height="315" src="https://www.youtube.com/embed/ZtVw2iuFI2w" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div></div>
+              <div class="video-slot"><div class="video-wrap"><iframe width="560" height="315" src="https://www.youtube.com/embed/NPT__vt-hCg" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div></div>
+              <div class="video-slot"><div class="video-wrap"><iframe width="560" height="315" src="https://www.youtube.com/embed/QAB01OIVmCo" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div></div>
+              <div class="video-slot"><div class="video-wrap"><iframe width="560" height="315" src="https://www.youtube.com/embed/n3mHfQft5P8" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div></div>
+            </div>
+            <div class="card quiz-box" style="margin-top: 18px; border: none; background: transparent; padding: 0;">
+                <div class="quiz-head"><div><h3>Models &amp; Design Quiz</h3><p class="muted">Questions from all design chapters.</p></div><button class="btn primary" onclick="renderQuiz('models')">New Random Quiz</button></div>
+                <div id="modelsQuiz" class="quiz-list"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="page-sql">
+        <div class="page-head"><h3>SQL</h3><p>Study the lessons, then run queries in the playground.</p></div>
+        <div class="grid-2">
+          <div class="card pad">
+            <div id="sqlLectures"></div>
+            <div class="video-stack">
+              <div class="video-slot"><div class="video-wrap"><iframe width="560" height="315" src="https://www.youtube.com/embed/vUj-kUEC_oA" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div></div>
+              <div class="video-slot"><div class="video-wrap"><iframe width="560" height="315" src="https://www.youtube.com/embed/Hl4NZB1XR9c" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div></div>
+            </div>
+          </div>
+          <div class="card pad">
+            <div class="section-head"><div><h3>SQL Playground</h3><p>Practice with a learning dataset. Supports a useful subset of SQL.</p></div></div>
+            <textarea id="sqlInput" class="note-box" style="min-height: 150px;">SELECT name, age FROM students WHERE age >= 20 ORDER BY age DESC;</textarea>
+            <div class="button-row" style="margin-top:10px;">
+              <button class="btn primary" id="runSqlBtn">Run Query</button>
+              <button class="btn" data-sql="SELECT * FROM students;">Students</button>
+              <button class="btn" data-sql="SELECT * FROM courses;">Courses</button>
+              <button class="btn" data-sql="SELECT s.name, c.title FROM students s JOIN enrollments e ON s.id = e.student_id JOIN courses c ON c.id = e.course_id;">Join Example</button>
+            </div>
+            <div class="result" id="sqlResult"></div>
+            <div style="margin-top: 14px;">
+              <strong>Sample Tables</strong>
+              <table class="table" style="margin-top:10px;">
+                <thead><tr><th>Table</th><th>Columns</th></tr></thead>
+                <tbody>
+                  <tr><td>students</td><td>id, name, age, dept</td></tr>
+                  <tr><td>courses</td><td>id, title, credit</td></tr>
+                  <tr><td>enrollments</td><td>student_id, course_id, semester</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="card quiz-box" style="margin-top:18px;">
+          <div class="quiz-head"><div><h3>SQL Quiz</h3><p class="muted">Randomized SQL MCQs and short answer questions.</p></div><button class="btn primary" onclick="renderQuiz('sql')">New Random Quiz</button></div>
+          <div id="sqlQuiz" class="quiz-list"></div>
+        </div>
+      </section>
+
+      <section class="section" id="page-keys">
+        <div class="page-head"><h3>Keys</h3><p>Super key, candidate key, primary key, foreign key, and natural key.</p></div>
+        <div class="grid-2">
+          <div class="card pad">
+            <div id="keysLectures"></div>
+            <div class="video-stack">
+                <div class="video-slot"><div class="video-wrap"><iframe width="560" height="315" src="https://www.youtube.com/embed/_UZLrD_R0T4" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div></div>
+            </div>
+          </div>
+          <div class="card quiz-box">
+            <div class="quiz-head"><div><h3>Keys Quiz</h3><p class="muted">New random questions every time.</p></div><button class="btn primary" onclick="renderQuiz('keys')">New Random Quiz</button></div>
+            <div id="keysQuiz" class="quiz-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="page-study">
+        <div class="page-head"><h3>Study Plan</h3><p>A structured roadmap from foundations to SQL mastery.</p></div>
+        <div class="card pad"><div class="study-timeline" id="studyTimeline"></div></div>
+      </section>
+
+      <section class="section" id="page-quiz">
+        <div class="page-head"><h3>Giant Random Quiz</h3><p>Mixed questions from every topic. Click refresh to get a new random set.</p></div>
+        <div class="card quiz-box">
+          <div class="quiz-head"><div><h3>Master Quiz</h3><p class="muted">All sections included, randomized on every refresh.</p></div><button class="btn primary" onclick="renderQuiz('all')">New Random Giant Quiz</button></div>
+          <div id="allQuiz" class="quiz-list"></div>
+        </div>
+      </section>
+
+      <p class="footer-note" style="margin:18px 4px 0;">Tip: These video URLs are now embedded directly. The layout will keep the video area styled automatically.</p>
+    </main>
+  </div>
+  <script>
+        const course = {
+      architecture: [
+        {
+          file: 'Lecture # 4 \u2013 ANSI SPARC ARCHITECTURE-1.ppt',
+          title: 'ANSI-SPARC Three-Level Architecture',
+          summary: 'External, conceptual, and internal schemas with data independence.',
+          keywords: ['ANSI-SPARC', 'three schema', 'external schema', 'conceptual schema', 'internal schema', 'data independence'],
+          content: `
+            <h3>Database Environment</h3>
+            <p>A database system involves multiple roles working together:</p>
+            <ul>
+              <li><strong>End Users</strong> interact through application programs.</li>
+              <li><strong>Application Programmers</strong> develop those programs.</li>
+              <li><strong>Database Administrators (DBA)</strong> maintain the DBMS and control access.</li>
+              <li><strong>Database Designers</strong> design the schema and structure.</li>
+            </ul>
+            <h3>Key Terminology</h3>
+            <div class="slide-block"><strong>Database Schema:</strong> The description of a database &mdash; its structure, tables, and constraints. Changes very infrequently.</div>
+            <div class="slide-block"><strong>Database Instance:</strong> The actual data stored at a specific moment in time (also called the database state or occurrence). Changes frequently.</div>
+            <h3>ANSI-SPARC Three-Level Architecture</h3>
+            <p>The ANSI-SPARC model separates a database into three distinct levels of abstraction:</p>
+            <ul>
+              <li><strong>External level (View level):</strong> Individual user views &mdash; different users see different customized subsets of data.</li>
+              <li><strong>Conceptual level (Logical level):</strong> The logical structure of the whole database, independent of physical storage.</li>
+              <li><strong>Internal level (Physical level):</strong> How data is physically stored &mdash; file organization, indexes, and access paths.</li>
+            </ul>
+            <table>
+              <thead><tr><th>Level</th><th>Also Called</th><th>Managed By</th><th>Describes</th></tr></thead>
+              <tbody>
+                <tr><td>External</td><td>View Level</td><td>End Users</td><td>Individual user views</td></tr>
+                <tr><td>Conceptual</td><td>Logical Level</td><td>DBA</td><td>Whole-DB logical structure</td></tr>
+                <tr><td>Internal</td><td>Physical Level</td><td>System</td><td>Physical storage details</td></tr>
+              </tbody>
+            </table>
+            <h3>Objectives of Three-Level Architecture</h3>
+            <ul>
+              <li>Provide <span class="hl">data abstraction</span> &mdash; hide lower-level complexity from users.</li>
+              <li>Same data accessed by different users with different customized views.</li>
+              <li>User is not concerned with physical storage details.</li>
+              <li>Physical storage can change without affecting conceptual or external levels (<span class="hl">physical data independence</span>).</li>
+              <li>Logical changes to conceptual schema do not affect external views (<span class="hl">logical data independence</span>).</li>
+            </ul>
+            <h3>Schema Mappings</h3>
+            <ul>
+              <li><strong>External / Conceptual Mapping:</strong> Transforms a user's external view into the conceptual schema.</li>
+              <li><strong>Conceptual / Internal Mapping:</strong> Transforms the conceptual schema into the physical internal schema.</li>
+            </ul>
+            <p>Key idea: change one layer with <span class="hl">minimal or no effect</span> on the others.</p>`
+        }
+      ],
+      lifecycle: [
+        {
+          file: 'Lecture # 5 &amp; #6 \u2013 Database System Development LifeCycle.ppt',
+          title: 'Database Development Life Cycle',
+          summary: 'Requirements, analysis, design, implementation, testing, and maintenance.',
+          keywords: ['SDLC', 'requirements', 'analysis', 'design', 'implementation', 'maintenance'],
+          content: `
+            <h3>Overview</h3>
+            <p>The Database System Development Life Cycle (DSDLC) is a structured process for creating and maintaining a database application system &mdash; from initial planning through long-term maintenance.</p>
+            <h3>All Lifecycle Phases</h3>
+            <ol>
+              <li><strong>Database Planning</strong> &mdash; Management activities enabling all lifecycle stages to be realized efficiently. Must align with the organization's overall IS strategy.</li>
+              <li><strong>System Definition</strong> &mdash; Specifies the scope, boundaries, and major user views of the system.</li>
+              <li><strong>Requirements Collection &amp; Analysis</strong> &mdash; Gathering and analyzing the organization's data and usage requirements.</li>
+              <li><strong>Database Design</strong> &mdash; Three-phase design: conceptual &rarr; logical &rarr; physical.</li>
+              <li><strong>DBMS Selection (optional)</strong> &mdash; Selecting the most appropriate DBMS product.</li>
+              <li><strong>Application Design</strong> &mdash; Designing user interfaces and application programs.</li>
+              <li><strong>Prototyping (optional)</strong> &mdash; Building a working model to help users visualize the final system.</li>
+              <li><strong>Implementation</strong> &mdash; Creating physical database definitions and writing application programs.</li>
+              <li><strong>Data Conversion &amp; Loading</strong> &mdash; Transferring existing data into the new database system.</li>
+              <li><strong>Testing</strong> &mdash; Running the system with real data to detect errors and verify performance.</li>
+              <li><strong>Operational Maintenance</strong> &mdash; Ongoing monitoring and maintenance after deployment.</li>
+            </ol>
+            <h3>Database Planning &mdash; Mission Statement &amp; Objectives</h3>
+            <div class="slide-block">The <strong>mission statement</strong> defines the major aims of the database application. It clarifies the purpose and provides a clearer path toward efficient and effective creation of the required system.</div>
+            <div class="slide-block"><strong>Mission objectives</strong> are defined once the mission statement is complete. Each objective defines a specific task the database must support.</div>
+            <h3>Requirements Collection Approaches</h3>
+            <ul>
+              <li><strong>Centralized Approach:</strong> Requirements from all user groups are merged into one set, producing a single global conceptual schema.</li>
+              <li><strong>View Integration Approach:</strong> Requirements per user group are kept separate and later merged into a unified schema.</li>
+            </ul>
+            <h3>Database Design Phases</h3>
+            <table>
+              <thead><tr><th>Phase</th><th>Description</th><th>Output</th></tr></thead>
+              <tbody>
+                <tr><td>Conceptual Design</td><td>High-level model independent of any DBMS technology</td><td>ER Diagram</td></tr>
+                <tr><td>Logical Design</td><td>Maps conceptual model to the DBMS data model</td><td>Relational Tables</td></tr>
+                <tr><td>Physical Design</td><td>Specifies physical storage structures and access methods</td><td>Storage Schema</td></tr>
+              </tbody>
+            </table>
+            <p>A strong design phase reduces later errors and rework significantly.</p>`
+        }
+      ],
+      models: [
+        {
+          file: 'Lecture # 2 \u2013 DATABASE APPROACH.pptx',
+          title: 'Database Approach vs File Processing',
+          summary: 'Why DBMS is better than traditional file systems.',
+          keywords: ['DBMS', 'file system', 'data vs information', 'metadata', 'advantages'],
+          content: `
+            <h3>Data vs. Information</h3>
+            <div class="slide-block"><strong>Data:</strong> Raw, unprocessed facts without context (e.g., "25", "Lahore", "2024").<br/><strong>Information:</strong> Processed and organized data that has meaning (e.g., "25-year-old employee in Lahore, hired in 2024").</div>
+            <h3>Metadata</h3>
+            <p><strong>Metadata</strong> is data about data &mdash; describes the structure, format, and constraints of the data (e.g., column names, data types, table relationships).</p>
+            <h3>Traditional File Processing Systems &mdash; Disadvantages</h3>
+            <ul>
+              <li><strong>Data redundancy:</strong> Same data duplicated across multiple files.</li>
+              <li><strong>Data inconsistency:</strong> Updates in one file not reflected elsewhere.</li>
+              <li><strong>Poor data sharing:</strong> Difficult to share data across departments.</li>
+              <li><strong>Security problems:</strong> No uniform access control or enforcement.</li>
+              <li><strong>Data isolation:</strong> Data scattered in different formats and locations.</li>
+              <li><strong>Lack of integration:</strong> No central control or coordination of data.</li>
+            </ul>
+            <h3>The Database Approach</h3>
+            <p>A <strong>database</strong> is a shared, integrated structure that stores end-user data (raw facts) and metadata (data about data). A <strong>DBMS</strong> manages and controls access to the database, acting as an intermediary between application programs and the stored data.</p>
+            <ul>
+              <li>Reduced data redundancy through centralized storage.</li>
+              <li>Better data sharing across the organization.</li>
+              <li>Improved security and consistency through centralized control.</li>
+              <li>Supports concurrent access by multiple users.</li>
+            </ul>
+            <h3>Views in a Database</h3>
+            <p>Different users can have different <strong>views</strong> of the same database &mdash; virtual tables derived from base tables, showing only data relevant to that user group.</p>`
+        },
+        {
+          file: 'Lecture # 3 \u2013 DATABASE SYSTEM MODELS.pptx',
+          title: 'Database System Models',
+          summary: 'Flat file, hierarchical, network, relational, object-relational, and object-based models.',
+          keywords: ['flat file', 'hierarchical', 'network', 'relational', 'object-relational'],
+          content: `
+            <h3>What is a Database Model?</h3>
+            <p>A database model defines the <strong>logical design and structure</strong> of a database &mdash; how data will be stored, accessed, and updated. It is a blueprint for organizing data.</p>
+            <h3>Flat File Model</h3>
+            <p>Stores all data in a single table or plain text file with no relationships between tables. Easy to create but unsuitable for complex or large datasets.</p>
+            <p><strong>Example:</strong> A student record Excel sheet with name, roll number, class, and marks all in one table.</p>
+            <h3>Hierarchical Model</h3>
+            <p>Developed in the 1960s. Organizes data in an <strong>upside-down tree</strong> with parent&ndash;child relationships. Each child has exactly one parent (one-to-many).</p>
+            <ul>
+              <li><strong>Example:</strong> School &rarr; Classes &rarr; Students.</li>
+              <li><strong>Advantages:</strong> Conceptual simplicity, good security and integrity.</li>
+              <li><strong>Disadvantages:</strong> Complex to implement, lacks structural independence, limited standards.</li>
+            </ul>
+            <h3>Network Model</h3>
+            <p>Extension of hierarchical &mdash; a child can have <strong>multiple parents</strong>, forming a graph. Supports many-to-many relationships.</p>
+            <h3>Relational Model</h3>
+            <p>The most widely used model. Data organized in <strong>tables (relations)</strong> with rows (tuples) and columns (attributes). Relationships use keys. Supports complex queries via SQL.</p>
+            <p><strong>Examples:</strong> MySQL, PostgreSQL, Oracle, SQL Server.</p>
+            <h3>Object-Relational Model</h3>
+            <p>Extends the relational model with object-oriented features: complex user-defined types, inheritance, and object identity.</p>
+            <h3>Object-Based Data Model</h3>
+            <p>Fully object-oriented &mdash; data stored as objects with attributes and methods. Suitable for multimedia, CAD/CAM systems.</p>`
+        },
+        {
+          file: 'Lecture # 8 \u2013 Database Design.ppt',
+          title: 'Database Design',
+          summary: 'Top-down and bottom-up design, entity planning, and schema design.',
+          keywords: ['database design', 'top-down', 'bottom-up', 'schema', 'normalization'],
+          content: `
+            <h3>Data Modeling</h3>
+            <p>A detailed model capturing the overall structure of organizational data, independent of any implementation. Performed during systems analysis, parallel with requirements gathering.</p>
+            <h3>Entity-Relationship Diagram (ERD)</h3>
+            <p>Proposed by <strong>Peter Chen in 1976</strong>. An ERD is a logical graphical representation of organizational data &mdash; a top-down approach to database design. Used at the <span class="hl">conceptual design</span> stage.</p>
+            <ul>
+              <li>Primary purpose: document the logical structure of a database.</li>
+              <li>Involves examining data objects and identifying relationships.</li>
+              <li>An ER diagram maps directly into a relational schema.</li>
+            </ul>
+            <h3>Core ER Concepts</h3>
+            <table>
+              <thead><tr><th>Concept</th><th>Definition</th><th>Example</th></tr></thead>
+              <tbody>
+                <tr><td>Entity Type</td><td>Label for objects with similar properties</td><td>Person, Place, Course</td></tr>
+                <tr><td>Entity Instance</td><td>A specific object of an entity type</td><td>M. Usman (a Person)</td></tr>
+                <tr><td>Entity Set</td><td>All instances of an entity type</td><td>All Employees</td></tr>
+                <tr><td>Attribute</td><td>A property describing an entity</td><td>Name, Age, Address</td></tr>
+                <tr><td>Relationship</td><td>An association between two entities</td><td>Employee WORKS_IN Department</td></tr>
+              </tbody>
+            </table>
+            <h3>ER Diagram Symbols</h3>
+            <table>
+              <thead><tr><th>Component</th><th>Symbol</th></tr></thead>
+              <tbody>
+                <tr><td>Entity</td><td>Rectangle</td></tr>
+                <tr><td>Attribute</td><td>Oval / Ellipse</td></tr>
+                <tr><td>Relationship</td><td>Diamond</td></tr>
+                <tr><td>Weak Entity</td><td>Double Rectangle</td></tr>
+                <tr><td>Derived Attribute</td><td>Dashed Oval</td></tr>
+                <tr><td>Multi-valued Attribute</td><td>Double Oval</td></tr>
+              </tbody>
+            </table>`
+        },
+        {
+          file: 'Lecture # 9 \u2013 ER Relationship.ppt',
+          title: 'ER Relationship',
+          summary: 'Entities, attributes, relationships, cardinality, and participation.',
+          keywords: ['ER model', 'entity', 'relationship', 'cardinality', 'attribute'],
+          content: `
+            <h3>Types of Relationships by Degree</h3>
+            <div class="slide-block"><strong>Unary (Degree 1):</strong> Both participants are the same entity type (recursive).<br/>Example: An Employee <em>manages</em> another Employee.</div>
+            <div class="slide-block"><strong>Binary (Degree 2):</strong> The most common &mdash; two different entities participate.<br/>Example: Student <em>enrolls in</em> Course.</div>
+            <div class="slide-block"><strong>Ternary (Degree 3):</strong> Three entities participate simultaneously.<br/>Example: Doctor <em>prescribes</em> Medicine to Patient.</div>
+            <h3>Connectivity / Cardinality</h3>
+            <p>Cardinality classifies how entity instances relate. It is <span class="hl">bi-directional</span> &mdash; must be defined for both directions of the relationship.</p>
+            <table>
+              <thead><tr><th>Type</th><th>Notation</th><th>Meaning</th></tr></thead>
+              <tbody>
+                <tr><td>One-to-One</td><td>1:1</td><td>One entity relates to exactly one other</td></tr>
+                <tr><td>One-to-Many</td><td>1:M</td><td>One entity relates to many others</td></tr>
+                <tr><td>Many-to-Many</td><td>M:N</td><td>Many entities relate to many others</td></tr>
+              </tbody>
+            </table>
+            <h3>Supertypes and Subtypes (Generalization / Specialization)</h3>
+            <ul>
+              <li>A <strong>supertype</strong> is a general entity type with common attributes shared by all subtypes.</li>
+              <li><strong>Subtypes</strong> are specializations with their own additional attributes.</li>
+              <li><strong>Example:</strong> Vehicle (supertype) &rarr; Car, Van, Bus (subtypes).</li>
+            </ul>
+            <p>ER diagrams help in converting requirements into relational tables.</p>`
+        }
+      ],
+      sql: [
+        {
+          file: 'Lecture # 10 \u2013 SQL 1.ppt',
+          title: 'SQL Basics',
+          summary: 'Introduction to SQL, SELECT, DDL, CREATE, and table definition.',
+          keywords: ['SQL', 'SELECT', 'DDL', 'CREATE', 'DROP'],
+          content: `
+            <h3>What is SQL?</h3>
+            <p><strong>SQL (Structured Query Language)</strong> is the standard language for Relational Database Management Systems &mdash; used to retrieve, insert, modify, and delete data.</p>
+            <h3>What is a Table?</h3>
+            <p>Data is stored in <strong>tables</strong> &mdash; uniquely named objects with rows (records) and columns (attributes).</p>
+            <table>
+              <thead><tr><th>City</th><th>State</th><th>High</th><th>Low</th></tr></thead>
+              <tbody>
+                <tr><td>Phoenix</td><td>Arizona</td><td>105</td><td>90</td></tr>
+                <tr><td>Tucson</td><td>Arizona</td><td>101</td><td>92</td></tr>
+                <tr><td>Flagstaff</td><td>Arizona</td><td>88</td><td>69</td></tr>
+                <tr><td>San Diego</td><td>California</td><td>77</td><td>60</td></tr>
+              </tbody>
+            </table>
+            <h3>SELECT Statement</h3>
+            <p>The only way to query and retrieve data. Filtered using the WHERE clause.</p>
+            <pre><code>SELECT * FROM &lt;Table&gt; WHERE &lt;Condition&gt;;
+SELECT column1, column2 FROM &lt;Table&gt; WHERE &lt;Condition&gt;;
+
+-- Example
+SELECT * FROM weather WHERE city = 'Phoenix';</code></pre>
+            <h3>DDL &mdash; Data Definition Language</h3>
+            <ul>
+              <li><code>CREATE</code> &mdash; creates a new table or database</li>
+              <li><code>ALTER</code> &mdash; modifies existing table structure</li>
+              <li><code>DROP</code> &mdash; deletes a table or database</li>
+              <li><code>TRUNCATE</code> &mdash; removes all rows, keeps structure</li>
+            </ul>
+            <h3>DML &mdash; Data Manipulation Language</h3>
+            <ul>
+              <li><code>SELECT</code> &mdash; retrieves data</li>
+              <li><code>INSERT</code> &mdash; adds new rows</li>
+              <li><code>UPDATE</code> &mdash; modifies existing data</li>
+              <li><code>DELETE</code> &mdash; removes rows</li>
+            </ul>`
+        },
+        {
+          file: 'Lecture # 11 \u2013 SQL 2.ppt',
+          title: 'SQL Advanced Queries',
+          summary: 'Joins, subqueries, grouping, and more advanced query patterns.',
+          keywords: ['joins', 'subqueries', 'GROUP BY', 'HAVING', 'aggregate functions'],
+          content: `
+            <h3>INSERT Statement</h3>
+            <p>Adds a new row into a table. Two syntaxes:</p>
+            <pre><code>-- Syntax 1: Specific columns only
+INSERT INTO &lt;Table&gt; (column1, column2) VALUES (value1, value2);
+INSERT INTO employee (first, last, deptno) VALUES ('Aarthy', 'Menon', 20);
+
+-- Syntax 2: All columns (values must match column order)
+INSERT INTO &lt;Table&gt; VALUES (value1, value2, ...);
+INSERT INTO employee VALUES ('Arul', 'Kumar', 'Bangalore', 'Karnataka', 30, 40);</code></pre>
+            <h3>UPDATE Statement</h3>
+            <p>Modifies existing records. <span class="hl">Without WHERE, ALL rows are updated!</span></p>
+            <pre><code>UPDATE &lt;Table&gt; SET column1 = value1 WHERE &lt;Condition&gt;;
+UPDATE employee SET deptno = 30 WHERE last = 'Kumar';</code></pre>
+            <h3>DELETE Statement</h3>
+            <p>Removes rows from a table. <span class="hl">Without WHERE, ALL rows are deleted!</span></p>
+            <pre><code>DELETE FROM &lt;Table&gt; WHERE &lt;Condition&gt;;
+DELETE FROM employee WHERE deptno = 20;</code></pre>
+            <h3>DML Summary</h3>
+            <table>
+              <thead><tr><th>Command</th><th>Purpose</th><th>Reversible (ROLLBACK)</th></tr></thead>
+              <tbody>
+                <tr><td>INSERT</td><td>Add new records</td><td>Yes</td></tr>
+                <tr><td>UPDATE</td><td>Modify existing records</td><td>Yes</td></tr>
+                <tr><td>DELETE</td><td>Remove records</td><td>Yes</td></tr>
+              </tbody>
+            </table>
+            <h3>Advanced: JOIN, GROUP BY, HAVING</h3>
+            <ul>
+              <li>Join tables: <code>SELECT s.name, c.title FROM students s JOIN enrollments e ON s.id = e.student_id JOIN courses c ON c.id = e.course_id;</code></li>
+              <li>Aggregate: <code>SELECT dept, COUNT(*) FROM students GROUP BY dept;</code></li>
+              <li>Filter groups: <code>SELECT dept, COUNT(*) FROM students GROUP BY dept HAVING COUNT(*) &gt; 1;</code></li>
+            </ul>`
+        }
+      ],
+      keys: [
+        {
+          file: 'Lec 12 \u2013 Keys.pptx',
+          title: 'Database Keys',
+          summary: 'Super key, candidate key, primary key, foreign key, and natural key.',
+          keywords: ['super key', 'candidate key', 'primary key', 'foreign key', 'natural key'],
+          content: `
+            <h3>What are Keys?</h3>
+            <p>A <strong>key</strong> in DBMS is an attribute or set of attributes that uniquely identifies a row (tuple) in a relation (table). Keys allow finding relationships between tables and fetching records according to conditions.</p>
+            <h3>1. Super Key</h3>
+            <div class="slide-block">Any set of one or more attributes whose combined value uniquely identifies a row. May include redundant attributes. Primary Key, Unique Key, and Alternate Key are all subsets of a super key.</div>
+            <p><strong>Example:</strong> <code>StudentID</code>, <code>(StudentID, Email)</code>, <code>(StudentID, FirstName)</code> are all super keys in a Students table.</p>
+            <h3>2. Candidate Key</h3>
+            <div class="slide-block">A <strong>minimal super key</strong> &mdash; uniquely identifies rows without any redundant attributes. A table can have multiple candidate keys; one is selected as Primary Key.</div>
+            <p><strong>Properties:</strong> Must be unique, no NULL values, minimum fields required for uniqueness.</p>
+            <h3>3. Primary Key</h3>
+            <div class="slide-block">The candidate key <strong>chosen</strong> to uniquely identify records. Must be unique and NOT NULL. Only one primary key per table. Cannot be modified if referenced by a foreign key.</div>
+            <h3>4. Alternate Key</h3>
+            <p>All candidate keys <strong>not selected</strong> as the primary key. Also called a "Secondary Key". Example: <code>Email</code> when <code>StudentID</code> is PK.</p>
+            <h3>5. Unique Key</h3>
+            <p>Ensures column values are unique but <strong>allows NULL values</strong> (unlike Primary Key). Creates a non-clustered index.</p>
+            <h3>6. Composite Key</h3>
+            <p>A combination of <strong>two or more attributes</strong> that together uniquely identify a record. Example: <code>(StudentID, CourseID)</code> in an Enrollments table.</p>
+            <h3>7. Foreign Key</h3>
+            <div class="slide-block">A field in one table that is the Primary Key in another table. Maintains referential integrity. Can accept NULL and duplicate values. Acts as a cross-reference between tables.</div>
+            <h3>8. Natural Key</h3>
+            <p>A key composed of columns with a <strong>logical real-world relationship</strong> to other columns. Also called a "Business Key" or "Domain Key".</p>
+            <h3>Key Comparison Table</h3>
+            <table>
+              <thead><tr><th>Key Type</th><th>Unique?</th><th>NULL Allowed?</th><th>Multiple Per Table?</th></tr></thead>
+              <tbody>
+                <tr><td>Primary Key</td><td>Yes</td><td>No</td><td>No (one only)</td></tr>
+                <tr><td>Candidate Key</td><td>Yes</td><td>No</td><td>Yes</td></tr>
+                <tr><td>Alternate Key</td><td>Yes</td><td>No</td><td>Yes</td></tr>
+                <tr><td>Unique Key</td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+                <tr><td>Foreign Key</td><td>No</td><td>Yes</td><td>Yes</td></tr>
+                <tr><td>Composite Key</td><td>Yes (combined)</td><td>No</td><td>Yes</td></tr>
+                <tr><td>Super Key</td><td>Yes</td><td>No</td><td>Yes</td></tr>
+              </tbody>
+            </table>`
+        },
+        {
+          file: 'DatabBade Keys.doc',
+          title: 'Database Keys Handout',
+          summary: 'A supporting handout that repeats and reinforces key concepts.',
+          keywords: ['keys', 'integrity', 'uniqueness', 'primary key', 'foreign key'],
+          content: `
+            <h3>Introduction</h3>
+            <p>In a relational database, a <strong>key</strong> is an attribute or set of attributes that uniquely identifies records in a table, preventing duplicates and ensuring data integrity.</p>
+            <h3>Super Key</h3>
+            <p>Any set of attributes that can uniquely identify a record &mdash; may include additional attributes not strictly necessary. Example: <code>(StudentID, Email)</code> is a super key even though <code>StudentID</code> alone suffices.</p>
+            <h3>Candidate Key</h3>
+            <p>A minimal superkey with no redundant attributes. There may be multiple candidate keys per table. Example: both <code>StudentID</code> and <code>Email</code> are candidate keys in a Students table.</p>
+            <h3>Primary Key</h3>
+            <p>A candidate key chosen as the main unique identifier. Must be unique, NOT NULL, and only one per table. Example: <code>StudentID</code> selected as primary key.</p>
+            <h3>Alternate Key</h3>
+            <p>Candidate keys not chosen as primary key &mdash; can also uniquely identify records. Example: <code>Email</code> when <code>StudentID</code> is the primary key.</p>
+            <h3>Unique Key</h3>
+            <p>Ensures column uniqueness but <strong>allows one NULL</strong> &mdash; unlike the primary key. Example: <code>Email</code> as unique key &mdash; must be unique if provided, but NULL is acceptable.</p>
+            <h3>Composite Key</h3>
+            <p>Two or more attributes combined to form a key &mdash; neither attribute alone is sufficient. Example: <code>(StudentID, CourseID)</code> in CourseEnrollments.</p>
+            <h3>Foreign Key</h3>
+            <p>A column referencing the <strong>Primary Key of another table</strong>. Maintains referential integrity and enables relationships between tables. Can hold NULL and duplicate values.</p>
+            <h3>Natural Key</h3>
+            <p>A key made from real-world meaningful data with inherent logical relationships to other columns. Also called a "Business Key".</p>
+            <h3>Conclusion</h3>
+            <p>Per Dr. E.F. Codd's third rule: every data element must be accessible via table-name + primary-key + attribute-name. <span class="hl">Every table must have a key</span> to ensure data reliability and integrity.</p>`
+        }
+      ]
+    };
+
+    const quizBank = {
+      architecture: [
+        { type: 'mcq', q: 'Which ANSI-SPARC level describes how data is physically stored?', options: ['External level', 'Conceptual level', 'Internal level', 'Logical level'], a: 2 },
+        { type: 'qa', q: 'Name the three ANSI-SPARC levels.', a: 'External, conceptual, and internal levels.' },
+        { type: 'mcq', q: 'Which term means the database can change storage without changing user views?', options: ['Physical data independence', 'Logical redundancy', 'Entity integrity', 'Normalization'], a: 0 },
+        { type: 'qa', q: 'Why is abstraction useful in DBMS?', a: 'It hides unnecessary details and makes systems easier to use and maintain.' },
+        { type: 'mcq', q: 'What is the difference between a database schema and a database instance?', options: ['Schema is data, instance is structure', 'Schema is structure, instance is the actual data at a moment in time', 'They are the same thing', 'Schema changes frequently'], a: 1 },
+        { type: 'qa', q: 'What does the External/Conceptual mapping do?', a: 'It transforms a user\'s external view into the conceptual schema, allowing different users to see different views of the same data.' }
+      ],
+      lifecycle: [
+        { type: 'mcq', q: 'Which phase usually comes after requirements gathering?', options: ['Maintenance', 'Design', 'Backup', 'Deletion'], a: 1 },
+        { type: 'qa', q: 'List any four phases of the database life cycle.', a: 'Planning, analysis, design, implementation, testing, maintenance.' },
+        { type: 'mcq', q: 'Which phase checks whether the database works correctly?', options: ['Testing', 'Analysis', 'Planning', 'Feasibility'], a: 0 },
+        { type: 'qa', q: 'Why is the design phase important?', a: 'It reduces future errors and makes the system easier to build and maintain.' },
+        { type: 'mcq', q: 'Which design phase produces an ER diagram?', options: ['Physical Design', 'Logical Design', 'Conceptual Design', 'Implementation'], a: 2 },
+        { type: 'qa', q: 'What is the difference between the Centralized and View Integration approaches?', a: 'Centralized merges all requirements into one schema; View Integration keeps each user view separate and merges later.' }
+      ],
+      models: [
+        { type: 'mcq', q: 'Which model stores data in tables?', options: ['Hierarchical', 'Network', 'Relational', 'Flat file only'], a: 2 },
+        { type: 'qa', q: 'What is the difference between file processing and DBMS?', a: 'DBMS manages shared, structured, controlled data better than separate file-based storage.' },
+        { type: 'mcq', q: 'Which ER concept represents a real-world object?', options: ['Attribute', 'Entity', 'Cardinality', 'Tuple'], a: 1 },
+        { type: 'qa', q: 'What does cardinality describe in ER diagrams?', a: 'How many instances of one entity can be related to another entity.' },
+        { type: 'mcq', q: 'Which design technique reduces redundancy?', options: ['Normalization', 'Replication', 'Denormalization', 'Index removal'], a: 0 },
+        { type: 'mcq', q: 'In a unary relationship, both participants belong to:', options: ['Different entity types', 'The same entity type', 'Three entity types', 'No entity type'], a: 1 },
+        { type: 'qa', q: 'Who proposed the ER model and in what year?', a: 'Peter Chen proposed the ER model in 1976.' }
+      ],
+      sql: [
+        { type: 'mcq', q: 'Which command is used to retrieve data?', options: ['SELECT', 'CREATE', 'DROP', 'ALTER'], a: 0 },
+        { type: 'qa', q: 'What does DDL stand for?', a: 'Data Definition Language.' },
+        { type: 'mcq', q: 'Which clause filters rows in a query?', options: ['WHERE', 'ORDER BY', 'GROUP BY', 'HAVING'], a: 0 },
+        { type: 'qa', q: 'Why do we use JOIN in SQL?', a: 'To combine rows from two or more tables using related columns.' },
+        { type: 'mcq', q: 'Which clause is used to sort results?', options: ['ORDER BY', 'LIMIT', 'HAVING', 'FROM'], a: 0 },
+        { type: 'qa', q: 'What happens if you run DELETE without a WHERE clause?', a: 'All rows in the table will be deleted. The table structure remains but all data is removed.' },
+        { type: 'mcq', q: 'Which INSERT syntax requires listing column names?', options: ['Syntax 2 (all columns)', 'Syntax 1 (specific columns)', 'Both syntaxes', 'Neither syntax'], a: 1 }
+      ],
+      keys: [
+        { type: 'mcq', q: 'Which key uniquely identifies a row and is chosen from candidate keys?', options: ['Super key', 'Primary key', 'Foreign key', 'Composite key'], a: 1 },
+        { type: 'qa', q: 'What is a foreign key?', a: 'A field that references the primary key of another table.' },
+        { type: 'mcq', q: 'Which key can contain extra attributes beyond what is needed?', options: ['Candidate key', 'Super key', 'Natural key', 'Alternate key'], a: 1 },
+        { type: 'qa', q: 'What is a candidate key?', a: 'A minimal super key that can uniquely identify a row.' },
+        { type: 'mcq', q: 'Which key comes from real-world meaning rather than a synthetic value?', options: ['Natural key', 'Surrogate key', 'Foreign key', 'Derived key'], a: 0 },
+        { type: 'qa', q: 'What is the difference between a Primary Key and a Unique Key?', a: 'Primary Key cannot have NULL values and only one exists per table; Unique Key allows one NULL value and multiple can exist per table.' },
+        { type: 'mcq', q: 'A composite key is made of:', options: ['One attribute only', 'Two or more attributes', 'Foreign keys only', 'Super keys only'], a: 1 }
+      ]
+    };
+
+    const allQuizBank = [...quizBank.architecture, ...quizBank.lifecycle, ...quizBank.models, ...quizBank.sql, ...quizBank.keys];
+
+    const sampleDB = {
+      students: [
+        { id: 1, name: 'Ayaan', age: 19, dept: 'CS' },
+        { id: 2, name: 'Hira', age: 21, dept: 'IT' },
+        { id: 3, name: 'Bilal', age: 20, dept: 'CS' },
+        { id: 4, name: 'Sana', age: 22, dept: 'SE' },
+        { id: 5, name: 'Uzair', age: 18, dept: 'IT' }
+      ],
+      courses: [
+        { id: 101, title: 'Database Systems', credit: 3 },
+        { id: 102, title: 'Programming Fundamentals', credit: 4 },
+        { id: 103, title: 'Web Development', credit: 3 }
+      ],
+      enrollments: [
+        { student_id: 1, course_id: 101, semester: 'Fall' },
+        { student_id: 2, course_id: 101, semester: 'Fall' },
+        { student_id: 3, course_id: 102, semester: 'Spring' },
+        { student_id: 4, course_id: 103, semester: 'Fall' },
+        { student_id: 5, course_id: 101, semester: 'Spring' }
+      ]
+    };
+
+    const state = {
+      theme: localStorage.getItem('dbhub-theme') || 'dark',
+      completed: JSON.parse(localStorage.getItem('dbhub-completed') || '{}'),
+      notes: JSON.parse(localStorage.getItem('dbhub-notes') || '{}'),
+      bookmarks: JSON.parse(localStorage.getItem('dbhub-bookmarks') || '{}'),
+      activePage: 'home'
+    };
+
+    function saveState() {
+      localStorage.setItem('dbhub-theme', state.theme);
+      localStorage.setItem('dbhub-completed', JSON.stringify(state.completed));
+      localStorage.setItem('dbhub-notes', JSON.stringify(state.notes));
+      localStorage.setItem('dbhub-bookmarks', JSON.stringify(state.bookmarks));
+    }
+
+    function escapeHtml(str) {
+      return String(str).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');
+    }
+
+    function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
+    function countLectures() { return Object.values(course).flat().length; }
+    function completedCount() { return Object.values(state.completed).filter(Boolean).length; }
+
+    function updateProgress() {
+      const total = countLectures(), done = completedCount();
+      const pct = total ? Math.round((done / total) * 100) : 0;
+      document.getElementById('progressText').textContent = pct + '%';
+      document.getElementById('progressLabel').textContent = done + ' of ' + total + ' lectures completed';
+      document.getElementById('progressBar').style.width = pct + '%';
+      document.getElementById('ring').style.background = 'conic-gradient(var(--accent) ' + pct + '%, rgba(148,163,184,.15) ' + pct + '% 100%)';
+    }
+
+    function lectureCard(topic, item, idx) {
+      const key = topic + '-' + idx;
+      const completed = !!state.completed[key], bookmarked = !!state.bookmarks[key], note = state.notes[key] || '';
+      return '<article class="lecture" data-topic="' + topic + '" data-search="' + escapeHtml((item.file+' '+item.title+' '+item.summary+' '+item.keywords.join(' ')).toLowerCase()) + '">' +
+        '<header><div><h4>' + escapeHtml(item.title) + '</h4><div class="muted" style="font-size:.9rem;">' + escapeHtml(item.file) + '</div></div>' +
+        '<div class="meta"><span class="tag">' + topic.toUpperCase() + '</span><span class="tag">' + item.keywords[0] + '</span></div></header>' +
+        '<p class="muted">' + escapeHtml(item.summary) + '</p>' +
+        '<details><summary>Open full content</summary><div class="content-html">' + item.content + '</div></details>' +
+        '<div class="lecture-actions">' +
+        '<label class="checkline"><input type="checkbox" data-complete="' + key + '"' + (completed?' checked':'') + '/> Completed</label>' +
+        '<button class="btn bookmark" data-bookmark="' + key + '">' + (bookmarked ? '\u2605 Bookmarked' : '\u2606 Bookmark') + '</button>' +
+        '</div>' +
+        '<textarea class="note-box" placeholder="Write your notes for ' + escapeHtml(item.title) + '..." data-note="' + key + '">' + escapeHtml(note) + '</textarea>' +
+        '</article>';
+    }
+
+    function renderLectures() {
+      const mount = (id, topic) => { document.getElementById(id).innerHTML = course[topic].map((item,idx) => lectureCard(topic,item,idx)).join(''); };
+      mount('architectureLectures','architecture'); mount('lifecycleLectures','lifecycle');
+      mount('modelsLectures','models'); mount('sqlLectures','sql'); mount('keysLectures','keys');
+      document.getElementById('homeList').innerHTML = Object.entries(course).flatMap(([topic,items]) => items.map((item,idx) => lectureCard(topic,item,idx))).join('');
+      attachCardEvents(); applySearch(document.getElementById('searchInput').value.trim()); updateProgress();
+    }
+
+    function attachCardEvents() {
+      document.querySelectorAll('[data-complete]').forEach(cb => { cb.onchange = () => { state.completed[cb.dataset.complete] = cb.checked; saveState(); updateProgress(); }; });
+      document.querySelectorAll('[data-bookmark]').forEach(btn => { btn.onclick = () => { const key = btn.dataset.bookmark; state.bookmarks[key] = !state.bookmarks[key]; saveState(); btn.textContent = state.bookmarks[key] ? '\u2605 Bookmarked' : '\u2606 Bookmark'; }; });
+      document.querySelectorAll('[data-note]').forEach(area => { area.oninput = () => { state.notes[area.dataset.note] = area.value; saveState(); }; });
+    }
+
+    function renderStudyPlan() {
+      const weeks = [
+        ['Week 1','Database approach, data vs information, DBMS vs file processing.',['Lecture # 2 \u2013 DATABASE APPROACH.pptx']],
+        ['Week 2','Database models and the ANSI-SPARC architecture.',['Lecture # 3 \u2013 DATABASE SYSTEM MODELS.pptx','Lecture # 4 \u2013 ANSI SPARC ARCHITECTURE-1.ppt']],
+        ['Week 3','Database design concepts and ER relationships.',['Lecture # 8 \u2013 Database Design.ppt','Lecture # 9 \u2013 ER Relationship.ppt']],
+        ['Week 4','Database development life cycle and implementation flow.',['Lecture # 5 &amp; #6 \u2013 Database System Development LifeCycle.ppt']],
+        ['Week 5','SQL basics: SELECT, DDL, and table operations.',['Lecture # 10 \u2013 SQL 1.ppt']],
+        ['Week 6','Advanced SQL and keys; finish with a revision quiz.',['Lecture # 11 \u2013 SQL 2.ppt','Lec 12 \u2013 Keys.pptx','DatabBade Keys.doc']]
+      ];
+      document.getElementById('studyTimeline').innerHTML = weeks.map((w,i) =>
+        '<div class="week"><div class="week-head"><div><h3>' + w[0] + '</h3><p class="muted">' + w[1] + '</p></div>' +
+        '<label class="checkline"><input type="checkbox" data-week="' + i + '"' + (localStorage.getItem('dbhub-week-'+i)==='1'?' checked':'') + '/> done</label></div>' +
+        '<div class="meta">' + w[2].map(x => '<span class="tag">' + escapeHtml(x) + '</span>').join('') + '</div></div>'
+      ).join('');
+      document.querySelectorAll('[data-week]').forEach(cb => cb.onchange = () => { localStorage.setItem('dbhub-week-'+cb.dataset.week, cb.checked ? '1' : '0'); });
+    }
+
+    function renderQuiz(target) {
+      const pool = target === 'all' ? allQuizBank : quizBank[target];
+      const mountId = target === 'all' ? 'allQuiz' : target + 'Quiz';
+      const mount = document.getElementById(mountId);
+      const chosen = shuffle(pool).slice(0, Math.min(5, pool.length));
+      mount.innerHTML = chosen.map((item, index) => {
+        const qid = target+'-'+index+'-'+Date.now()+'-'+Math.floor(Math.random()*9999);
+        if (item.type === 'mcq') {
+          const options = shuffle(item.options.map((t,i) => ({t,i})));
+          const correctText = item.options[item.a];
+          return '<div class="qcard" data-qid="' + qid + '" data-answer="' + escapeHtml(correctText) + '">' +
+            '<h4>' + (index+1) + '. ' + escapeHtml(item.q) + ' <span class="tag" style="margin-left:6px;">MCQ</span></h4>' +
+            '<div class="options">' + options.map((op,oi) => '<div class="option" tabindex="0" role="button" data-option="' + escapeHtml(op.t) + '"><strong>' + String.fromCharCode(65+oi) + '.</strong><span>' + escapeHtml(op.t) + '</span></div>').join('') + '</div>' +
+            '<div class="answer-reveal">Correct answer: <strong>' + escapeHtml(correctText) + '</strong></div></div>';
+        }
+        return '<div class="qcard" data-qid="' + qid + '" data-answer="' + escapeHtml(item.a) + '">' +
+          '<h4>' + (index+1) + '. ' + escapeHtml(item.q) + ' <span class="tag" style="margin-left:6px;">Q/A</span></h4>' +
+          '<button class="btn" data-reveal="1">Show Answer</button>' +
+          '<div class="answer-reveal">' + escapeHtml(item.a) + '</div></div>';
+      }).join('');
+      mount.querySelectorAll('[data-reveal]').forEach(btn => { btn.onclick = () => { const r = btn.closest('.qcard').querySelector('.answer-reveal'); r.style.display = r.style.display === 'block' ? 'none' : 'block'; }; });
+      mount.querySelectorAll('.option').forEach(opt => {
+        opt.onclick = () => {
+          const card = opt.closest('.qcard'), correct = card.dataset.answer, answer = opt.dataset.option;
+          card.querySelectorAll('.option').forEach(x => x.classList.remove('correct','wrong'));
+          if (answer === correct) { opt.classList.add('correct'); } else { opt.classList.add('wrong'); card.querySelectorAll('.option').forEach(x => { if (x.dataset.option === correct) x.classList.add('correct'); }); }
+          const reveal = card.querySelector('.answer-reveal'); if (reveal) { reveal.textContent = 'Correct answer: ' + correct; reveal.style.display = 'block'; }
+        };
+      });
+    }
+
+    function applySearch(term) {
+      const needle = term.toLowerCase(); let visible = 0;
+      document.querySelectorAll('.lecture').forEach(card => {
+        const match = !needle || (card.dataset.search||'').includes(needle);
+        card.classList.toggle('hidden', !match); if (match) visible++;
+      });
+      document.getElementById('searchStatus').textContent = needle ? visible + ' result(s) found' : 'Showing all lectures';
+    }
+
+    function showPage(page) {
+      state.activePage = page;
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.getElementById('page-'+page).classList.add('active');
+      document.querySelectorAll('.nav a').forEach(a => a.classList.toggle('active', a.dataset.page === page));
+      document.querySelectorAll('.topic-pill').forEach(p => p.classList.toggle('active', p.dataset.pagePill === page));
+      window.scrollTo({top:0,behavior:'smooth'}); location.hash = page;
+    }
+
+    function setTheme(theme) { state.theme = theme; document.body.classList.toggle('light', theme === 'light'); saveState(); }
+
+    function runSql(query) {
+      const q = query.trim().replace(/;\s*$/,''), resultEl = document.getElementById('sqlResult');
+      if (!q) { resultEl.style.display='block'; resultEl.textContent='Enter a SQL query.'; return; }
+      try {
+        const out = executeSimpleSQL(q); resultEl.style.display='block';
+        resultEl.innerHTML = typeof out === 'string' ? escapeHtml(out).replace(/\n/g,'<br/>') : renderTable(out);
+      } catch(err) {
+        resultEl.style.display='block';
+        resultEl.innerHTML = 'Query error: ' + escapeHtml(err.message) + '<br/><br/>Try: SELECT name, age FROM students WHERE age >= 20 ORDER BY age DESC;';
+      }
+    }
+
+    function renderTable(rows) {
+      if (!rows||!rows.length) return '<strong>No rows returned.</strong>';
+      const cols = Object.keys(rows[0]);
+      return '<div style="overflow:auto;max-width:100%;"><table class="table"><thead><tr>' + cols.map(c=>'<th>'+escapeHtml(c)+'</th>').join('') + '</tr></thead><tbody>' +
+        rows.map(r=>'<tr>'+cols.map(c=>'<td>'+escapeHtml(r[c]??'')+'</td>').join('')+'</tr>').join('') + '</tbody></table></div>';
+    }
+
+    function getTable(name) { const t = sampleDB[name.toLowerCase()]; if(!t) throw new Error('Unknown table: '+name); return t.map(x=>({...x})); }
+    function parseValue(raw) { const v=raw.trim(); if((v.startsWith("'")&&v.endsWith("'"))||(v.startsWith('"')&&v.endsWith('"'))) return v.slice(1,-1); if(/^-?\d+(\.\d+)?$/.test(v)) return Number(v); return v; }
+    function compare(a,op,b) { switch(op){ case '=':return a==b; case '!=':return a!=b; case '>':return Number(a)>Number(b); case '<':return Number(a)<Number(b); case '>=':return Number(a)>=Number(b); case '<=':return Number(a)<=Number(b); default:throw new Error('Unsupported operator: '+op); } }
+
+    function executeSimpleSQL(query) {
+      const original = query.trim(), upper = original.toUpperCase();
+      if(upper==='SHOW TABLES') return Object.keys(sampleDB).map(t=>({table_name:t}));
+      const describeMatch = original.match(/^DESCRIBE\s+(\w+)$/i);
+      if(describeMatch) { const table=getTable(describeMatch[1]), cols=Object.keys(table[0]||{}); return cols.map(c=>({column:c,sample:table[0]?.[c]??''})); }
+      const m = original.match(/^SELECT\s+(.+?)\s+FROM\s+(.+)$/i);
+      if(!m) throw new Error('Only SELECT / SHOW TABLES / DESCRIBE are supported.');
+      const selectPart=m[1].trim(); let rest=m[2].trim(), orderBy=null, limit=null, where=null;
+      const limitMatch=rest.match(/\s+LIMIT\s+(\d+)\s*$/i); if(limitMatch){limit=Number(limitMatch[1]);rest=rest.slice(0,limitMatch.index).trim();}
+      const orderMatch=rest.match(/\s+ORDER\s+BY\s+([\w\.]+)(?:\s+(ASC|DESC))?\s*$/i); if(orderMatch){orderBy={col:orderMatch[1],dir:(orderMatch[2]||'ASC').toUpperCase()};rest=rest.slice(0,orderMatch.index).trim();}
+      const whereMatch=rest.match(/\s+WHERE\s+(.+)$/i); if(whereMatch){where=whereMatch[1].trim();rest=rest.slice(0,whereMatch.index).trim();}
+      const jm=rest.match(/^(\w+)(?:\s+(\w+))?\s+JOIN\s+(\w+)(?:\s+(\w+))?\s+ON\s+([\w\.]+)\s*=\s*([\w\.]+)$/i);
+      let rows=[];
+      if(jm){
+        const [,lt,la,rt,ra,lk,rk]=[...jm]; const leftA=la||lt, rightA=ra||rt;
+        const leftRows=getTable(lt), rightRows=getTable(rt);
+        for(const l of leftRows) for(const r of rightRows) { const lv=lk.includes('.')?l[lk.split('.')[1]]:l[lk], rv=rk.includes('.')?r[rk.split('.')[1]]:r[rk]; if(lv==rv) rows.push({[leftA]:l,[rightA]:r,...l,...r}); }
+      } else { const tm=rest.match(/^(\w+)$/i); if(!tm) throw new Error('Malformed FROM clause.'); rows=getTable(tm[1]); }
+      if(where){
+        const ops=['>=','<=','!=','=','>','<']; let opFound=null,left=null,right=null;
+        for(const op of ops){const idx=where.indexOf(op);if(idx>-1){opFound=op;left=where.slice(0,idx).trim();right=where.slice(idx+op.length).trim();break;}}
+        if(!opFound) throw new Error('Unsupported WHERE clause.');
+        const value=parseValue(right); rows=rows.filter(row=>compare(getField(row,left),opFound,value));
+      }
+      if(orderBy){rows.sort((a,b)=>{const av=getField(a,orderBy.col),bv=getField(b,orderBy.col),dir=orderBy.dir==='DESC'?-1:1;return av<bv?-dir:av>bv?dir:0;});}
+      if(limit!=null) rows=rows.slice(0,limit);
+      if(selectPart==='*') return rows.map(stripNested);
+      return rows.map(row=>{const obj={};for(const f of selectPart.split(',').map(s=>s.trim())){const am=f.match(/^(.+?)\s+AS\s+(.+)$/i);if(am){obj[am[2].trim()]=getField(row,am[1].trim());}else{obj[f]=getField(row,f);}}return obj;});
+    }
+
+    function stripNested(row){const out={};for(const[k,v]of Object.entries(row)){if(v&&typeof v==='object'&&!Array.isArray(v))continue;out[k]=v;}return out;}
+    function getField(row,path){const p=path.trim();if(p.includes('.')){const[prefix,field]=p.split('.');if(row[prefix]&&typeof row[prefix]==='object')return row[prefix][field];return row[field];}if(row.hasOwnProperty(p))return row[p];for(const key of Object.keys(row)){if(typeof row[key]==='object'&&row[key]&&row[key].hasOwnProperty(p))return row[key][p];}return row[p];}
+
+    function bindNavigation() {
+      document.querySelectorAll('[data-page],[data-page-pill]').forEach(el=>el.addEventListener('click',()=>showPage(el.dataset.page||el.dataset.pagePill)));
+      document.querySelectorAll('[data-jump]').forEach(btn=>btn.addEventListener('click',()=>showPage(btn.dataset.jump)));
+      document.getElementById('toggleThemeBtn').onclick=()=>setTheme(state.theme==='dark'?'light':'dark');
+      document.getElementById('resetBtn').onclick=()=>{if(!confirm('Reset notes, bookmarks, completion, and theme settings?'))return;localStorage.clear();location.reload();};
+      document.getElementById('searchInput').addEventListener('input',e=>applySearch(e.target.value));
+      document.getElementById('runSqlBtn').onclick=()=>runSql(document.getElementById('sqlInput').value);
+      document.querySelectorAll('[data-sql]').forEach(btn=>btn.onclick=()=>{document.getElementById('sqlInput').value=btn.dataset.sql;runSql(btn.dataset.sql);});
+      window.addEventListener('hashchange',()=>{const page=location.hash.replace('#','')||'home';if(document.getElementById('page-'+page))showPage(page);});
+    }
+
+    function boot() {
+      setTheme(state.theme); bindNavigation(); renderLectures(); renderStudyPlan();
+      renderQuiz('architecture'); renderQuiz('lifecycle'); renderQuiz('models');
+      renderQuiz('sql'); renderQuiz('keys'); renderQuiz('all');
+      runSql(document.getElementById('sqlInput').value);
+      const page=location.hash.replace('#','')||'home';
+      if(document.getElementById('page-'+page))showPage(page); else showPage('home');
+    }
+    boot();
+  </script>
+</body>
+</html>
